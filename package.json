@@ -1,0 +1,17 @@
+{
+  "name": "interpreter-new",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "./node_modules/.bin/esbuild index.ts --bundle --outfile=out.js",
+    "eval": "./node_modules/.bin/esbuild index.ts --bundle --outfile=out.js && node out.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "esbuild": "^0.25.0"
+  }
+}
