@@ -1,27 +1,140 @@
-import { AST } from "./ast";
+import { AST, Print, VarDeclaration } from "./ast";
 import { Token } from "./token";
 
 export class Parser {
   tokens: Token[];
+  current: number;
 
   constructor(tokens: Token[]) {
     this.tokens = tokens;
+    this.current = 0;
   }
 
-  parse(): AST {
-    const token = this.tokens[0];
+  parse(): AST[] {
+    const statements: AST[] = [];
 
-    return {
-      left: { value: 1000, type: "int" },
-      right: { value: 1, type: "int" },
-      operator: "+",
-      type: "binary",
-    };
+    while (this.current < this.tokens.length) {
+      statements.push(this.varDeclaration());
+    }
 
-    // if (token.type === "int") {
-    //   return { value: token.literal, type: "int" };
-    // }
+    return statements;
+  }
 
-    // return { value: 1000, type: "int" };
+  varDeclaration() {
+    const token = this.getToken();
+    if (token.literal === "let") {
+      this.advance();
+      const indentifier = this.expression();
+
+      if (this.getToken().type !== "equals") {
+        throw new Error("Expected =");
+      }
+
+      this.advance();
+      const value = this.binary();
+
+      if (this.getToken().type !== "semicolon") {
+        throw new Error("Expected ;");
+      }
+      this.advance();
+
+      const varDeclaration: VarDeclaration = {
+        variable: indentifier,
+        value,
+        type: "varDeclaration",
+      };
+
+      return varDeclaration;
+    }
+
+    return this.statement();
+  }
+
+  statement() {
+    const token = this.getToken();
+    if (token.type === "keyword") {
+      if (token.literal === "print") {
+        this.advance();
+        const exp = this.binary();
+        const print: Print = { type: "print", value: exp };
+        if (this.getToken().type === "semicolon") {
+          this.advance();
+          return print;
+        } else {
+          throw new Error("Expected: ;");
+        }
+      }
+    }
+
+    return this.binary();
+  }
+
+  binary() {
+    let exp: AST = this.factor();
+    while (this.current < this.tokens.length) {
+      const token = this.getToken();
+      if (token.type !== "minus" && token.type !== "plus") {
+        break;
+      }
+      this.advance();
+
+      const binary: AST = {
+        left: exp,
+        operator: token.type === "plus" ? "+" : "-",
+        right: this.binary(),
+        type: "binary",
+      };
+      exp = binary;
+    }
+
+    return exp;
+  }
+
+  factor() {
+    let exp: AST = this.expression();
+    while (this.current < this.tokens.length) {
+      const token = this.getToken();
+      if (token.type !== "multiply" && token.type !== "divide") {
+        break;
+      }
+      this.advance();
+
+      const binary: AST = {
+        left: exp,
+        operator: token.type === "multiply" ? "*" : "/",
+        right: this.factor(),
+        type: "binary",
+      };
+      exp = binary;
+    }
+
+    return exp;
+  }
+
+  expression(): AST {
+    const token = this.getToken();
+    if (token.type === "int") {
+      const exp: AST = { value: token.literal, type: "int" };
+      this.advance();
+      return exp;
+    } else if (token.type === "indentifier") {
+      const exp: AST = { value: token.literal, type: "indentifier" };
+      this.advance();
+      return exp;
+    } else if (token.type === "keyword") {
+      const exp: AST = { value: token.literal, type: "keyword" };
+      this.advance();
+      return exp;
+    }
+
+    throw new Error("invalid expression");
+  }
+
+  getToken() {
+    return this.tokens[this.current];
+  }
+
+  advance() {
+    this.current++;
   }
 }
