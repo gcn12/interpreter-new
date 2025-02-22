@@ -15,10 +15,17 @@
         case "int": {
           return node.value;
         }
+        case "string": {
+          return node.value;
+        }
         case "binary": {
           if (node.operator === "+") {
             return this.evaluate(node.left) + this.evaluate(node.right);
-          } else if (node.operator === "-") {
+          }
+          if (node.left.type !== "int" || node.right.type !== "int") {
+            throw new Error("Cannot use math operations on strings");
+          }
+          if (node.operator === "-") {
             return this.evaluate(node.left) - this.evaluate(node.right);
           } else if (node.operator === "*") {
             return this.evaluate(node.left) * this.evaluate(node.right);
@@ -137,18 +144,27 @@
     }
     expression() {
       const token = this.getToken();
-      if (token.type === "int") {
-        const exp = { value: token.literal, type: "int" };
-        this.advance();
-        return exp;
-      } else if (token.type === "indentifier") {
-        const exp = { value: token.literal, type: "indentifier" };
-        this.advance();
-        return exp;
-      } else if (token.type === "keyword") {
-        const exp = { value: token.literal, type: "keyword" };
-        this.advance();
-        return exp;
+      switch (token.type) {
+        case "int": {
+          const exp = { value: token.literal, type: "int" };
+          this.advance();
+          return exp;
+        }
+        case "indentifier": {
+          const exp = { value: token.literal, type: "indentifier" };
+          this.advance();
+          return exp;
+        }
+        case "keyword": {
+          const exp = { value: token.literal, type: "keyword" };
+          this.advance();
+          return exp;
+        }
+        case "string": {
+          const exp = { value: token.literal, type: "string" };
+          this.advance();
+          return exp;
+        }
       }
       throw new Error("invalid expression");
     }
@@ -191,6 +207,17 @@
           case " ": {
             break;
           }
+          case '"': {
+            this.tokens.push({
+              type: "string",
+              literal: this.scanString()
+            });
+            if (this.getCurrentChar() !== '"') {
+              throw new Error('Expected: "');
+            }
+            this.advance();
+            break;
+          }
           default: {
             if (this.isNumeric(c)) {
               this.tokens.push({ literal: Number(this.scanInt()), type: "int" });
@@ -209,6 +236,12 @@
         }
       }
       return this.tokens;
+    }
+    scanString() {
+      while (!this.isEOF() && (this.isAlpha(this.getCurrentChar()) || this.isNumeric(this.getCurrentChar()) || this.getCurrentChar() === " ")) {
+        this.advance();
+      }
+      return this.source.slice(this.start + 1, this.current);
     }
     scanAlphaNumeric() {
       while (!this.isEOF() && (this.isAlpha(this.getCurrentChar()) || this.isNumeric(this.getCurrentChar()))) {
@@ -245,7 +278,7 @@
   };
 
   // index.ts
-  var code = "let hello = 5; print hello; print 5 + 10000 / 2;";
+  var code = 'let woo = "hello" + " woo"; print woo;';
   var scanner = new Scanner(code);
   var tokens = scanner.scan();
   console.log(tokens);

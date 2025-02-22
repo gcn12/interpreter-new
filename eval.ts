@@ -18,10 +18,19 @@ export class Eval {
       case "int": {
         return node.value;
       }
+      case "string": {
+        return node.value;
+      }
       case "binary": {
         if (node.operator === "+") {
           return this.evaluate(node.left) + this.evaluate(node.right);
-        } else if (node.operator === "-") {
+        }
+
+        if (node.left.type !== "int" || node.right.type !== "int") {
+          throw new Error("Cannot use math operations on strings");
+        }
+
+        if (node.operator === "-") {
           return this.evaluate(node.left) - this.evaluate(node.right);
         } else if (node.operator === "*") {
           return this.evaluate(node.left) * this.evaluate(node.right);

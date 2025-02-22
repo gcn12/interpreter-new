@@ -3,6 +3,11 @@ export type Int = {
   type: "int";
 };
 
+export type Str = {
+  value: string;
+  type: "string";
+};
+
 export type Identifier = {
   value: string;
   type: "indentifier";
@@ -31,4 +36,11 @@ export type Print = {
   type: "print";
 };
 
-export type AST = Int | Binary | Identifier | VarDeclaration | Keyword | Print;
+export type AST =
+  | Int
+  | Binary
+  | Identifier
+  | VarDeclaration
+  | Keyword
+  | Print
+  | Str;

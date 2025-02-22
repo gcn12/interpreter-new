@@ -34,6 +34,18 @@ export class Scanner {
           break;
         }
 
+        case '"': {
+          this.tokens.push({
+            type: "string",
+            literal: this.scanString(),
+          });
+          if (this.getCurrentChar() !== '"') {
+            throw new Error('Expected: "');
+          }
+          this.advance();
+          break;
+        }
+
         default: {
           if (this.isNumeric(c)) {
             this.tokens.push({ literal: Number(this.scanInt()), type: "int" });
@@ -55,6 +67,19 @@ export class Scanner {
     }
 
     return this.tokens;
+  }
+
+  scanString() {
+    while (
+      !this.isEOF() &&
+      (this.isAlpha(this.getCurrentChar()) ||
+        this.isNumeric(this.getCurrentChar()) ||
+        this.getCurrentChar() === " ")
+    ) {
+      this.advance();
+    }
+
+    return this.source.slice(this.start + 1, this.current);
   }
 
   scanAlphaNumeric() {

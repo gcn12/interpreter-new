@@ -113,18 +113,31 @@ export class Parser {
 
   expression(): AST {
     const token = this.getToken();
-    if (token.type === "int") {
-      const exp: AST = { value: token.literal, type: "int" };
-      this.advance();
-      return exp;
-    } else if (token.type === "indentifier") {
-      const exp: AST = { value: token.literal, type: "indentifier" };
-      this.advance();
-      return exp;
-    } else if (token.type === "keyword") {
-      const exp: AST = { value: token.literal, type: "keyword" };
-      this.advance();
-      return exp;
+
+    switch (token.type) {
+      case "int": {
+        const exp: AST = { value: token.literal, type: "int" };
+        this.advance();
+        return exp;
+      }
+
+      case "indentifier": {
+        const exp: AST = { value: token.literal, type: "indentifier" };
+        this.advance();
+        return exp;
+      }
+
+      case "keyword": {
+        const exp: AST = { value: token.literal, type: "keyword" };
+        this.advance();
+        return exp;
+      }
+
+      case "string": {
+        const exp: AST = { value: token.literal, type: "string" };
+        this.advance();
+        return exp;
+      }
     }
 
     throw new Error("invalid expression");
