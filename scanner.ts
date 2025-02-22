@@ -18,49 +18,27 @@ export class Scanner {
   scan() {
     while (!this.isEOF()) {
       this.start = this.current;
-      const c = this.getCurrentChar();
+      const c = this.getCurrentAndAdvance();
       switch (c) {
-        case "+": {
-          this.tokens.push({ type: "plus" });
-          this.advance();
-          break;
-        }
-        case "-": {
-          this.tokens.push({ type: "minus" });
-          this.advance();
-          break;
-        }
-        case "*": {
-          this.tokens.push({ type: "multiply" });
-          this.advance();
-          break;
-        }
-        case "/": {
-          this.tokens.push({ type: "divide" });
-          this.advance();
-          break;
-        }
-        case "=": {
-          this.tokens.push({ type: "equals" });
-          this.advance();
-          break;
-        }
+        case "+":
+        case "-":
+        case "*":
+        case "/":
+        case "=":
         case ";": {
-          this.tokens.push({ type: "semicolon" });
-          this.advance();
+          this.tokens.push({ type: c });
           break;
         }
 
         case " ": {
-          this.advance();
           break;
         }
 
         default: {
-          if (this.isNumeric()) {
+          if (this.isNumeric(c)) {
             this.tokens.push({ literal: Number(this.scanInt()), type: "int" });
             break;
-          } else if (this.isAlpha()) {
+          } else if (this.isAlpha(c)) {
             const alphaNumeric = this.scanAlphaNumeric();
             if (this.keywords.has(alphaNumeric)) {
               this.tokens.push({ literal: alphaNumeric, type: "keyword" });
@@ -80,7 +58,11 @@ export class Scanner {
   }
 
   scanAlphaNumeric() {
-    while (!this.isEOF() && (this.isAlpha() || this.isNumeric())) {
+    while (
+      !this.isEOF() &&
+      (this.isAlpha(this.getCurrentChar()) ||
+        this.isNumeric(this.getCurrentChar()))
+    ) {
       this.advance();
     }
 
@@ -88,7 +70,7 @@ export class Scanner {
   }
 
   scanInt() {
-    while (!this.isEOF() && this.isNumeric()) {
+    while (!this.isEOF() && this.isNumeric(this.getCurrentChar())) {
       this.advance();
     }
 
@@ -103,23 +85,29 @@ export class Scanner {
     this.current++;
   }
 
-  isAlpha() {
+  isAlpha(c: string) {
     return (
-      (this.getCurrentChar().charCodeAt(0) - "a".charCodeAt(0) >= 0 &&
-        this.getCurrentChar().charCodeAt(0) - "z".charCodeAt(0) <= 25) ||
-      (this.getCurrentChar().charCodeAt(0) - "A".charCodeAt(0) >= 0 &&
-        this.getCurrentChar().charCodeAt(0) - "Z".charCodeAt(0) <= 25)
+      (c.charCodeAt(0) - "a".charCodeAt(0) >= 0 &&
+        c.charCodeAt(0) - "z".charCodeAt(0) <= 25) ||
+      (c.charCodeAt(0) - "A".charCodeAt(0) >= 0 &&
+        c.charCodeAt(0) - "Z".charCodeAt(0) <= 25)
     );
   }
 
-  isNumeric() {
+  isNumeric(c: string) {
     return (
-      this.getCurrentChar().charCodeAt(0) - "0".charCodeAt(0) >= 0 &&
-      this.getCurrentChar().charCodeAt(0) - "0".charCodeAt(0) <= 9
+      c.charCodeAt(0) - "0".charCodeAt(0) >= 0 &&
+      c.charCodeAt(0) - "0".charCodeAt(0) <= 9
     );
   }
 
   getCurrentChar() {
     return this.source[this.current];
+  }
+
+  getCurrentAndAdvance() {
+    const current = this.getCurrentChar();
+    this.advance();
+    return current;
   }
 }

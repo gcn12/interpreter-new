@@ -1,6 +1,6 @@
 export type Token =
   | {
-      type: "equals" | "divide" | "multiply" | "minus" | "plus" | "semicolon";
+      type: "=" | "/" | "*" | "-" | "+" | ";";
     }
   | { type: "int"; literal: number }
   | { type: "indentifier"; literal: string }

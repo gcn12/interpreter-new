@@ -10,7 +10,6 @@ const scanner = new Scanner(code);
 const tokens = scanner.scan();
 const parser = new Parser(tokens);
 const astList = parser.parse();
-// console.log(astList);
 
 const evaluator = new Eval();
 

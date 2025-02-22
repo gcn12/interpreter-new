@@ -26,14 +26,14 @@ export class Parser {
       this.advance();
       const indentifier = this.expression();
 
-      if (this.getToken().type !== "equals") {
+      if (this.getToken().type !== "=") {
         throw new Error("Expected =");
       }
 
       this.advance();
       const value = this.binary();
 
-      if (this.getToken().type !== "semicolon") {
+      if (this.getToken().type !== ";") {
         throw new Error("Expected ;");
       }
       this.advance();
@@ -57,7 +57,7 @@ export class Parser {
         this.advance();
         const exp = this.binary();
         const print: Print = { type: "print", value: exp };
-        if (this.getToken().type === "semicolon") {
+        if (this.getToken().type === ";") {
           this.advance();
           return print;
         } else {
@@ -73,14 +73,14 @@ export class Parser {
     let exp: AST = this.factor();
     while (this.current < this.tokens.length) {
       const token = this.getToken();
-      if (token.type !== "minus" && token.type !== "plus") {
+      if (token.type !== "-" && token.type !== "+") {
         break;
       }
       this.advance();
 
       const binary: AST = {
         left: exp,
-        operator: token.type === "plus" ? "+" : "-",
+        operator: token.type,
         right: this.binary(),
         type: "binary",
       };
@@ -94,14 +94,14 @@ export class Parser {
     let exp: AST = this.expression();
     while (this.current < this.tokens.length) {
       const token = this.getToken();
-      if (token.type !== "multiply" && token.type !== "divide") {
+      if (token.type !== "*" && token.type !== "/") {
         break;
       }
       this.advance();
 
       const binary: AST = {
         left: exp,
-        operator: token.type === "multiply" ? "*" : "/",
+        operator: token.type,
         right: this.factor(),
         type: "binary",
       };

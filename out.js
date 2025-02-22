@@ -64,12 +64,12 @@
       if (token.type === "keyword" && token.literal === "let") {
         this.advance();
         const indentifier = this.expression();
-        if (this.getToken().type !== "equals") {
+        if (this.getToken().type !== "=") {
           throw new Error("Expected =");
         }
         this.advance();
         const value = this.binary();
-        if (this.getToken().type !== "semicolon") {
+        if (this.getToken().type !== ";") {
           throw new Error("Expected ;");
         }
         this.advance();
@@ -89,7 +89,7 @@
           this.advance();
           const exp = this.binary();
           const print = { type: "print", value: exp };
-          if (this.getToken().type === "semicolon") {
+          if (this.getToken().type === ";") {
             this.advance();
             return print;
           } else {
@@ -103,13 +103,13 @@
       let exp = this.factor();
       while (this.current < this.tokens.length) {
         const token = this.getToken();
-        if (token.type !== "minus" && token.type !== "plus") {
+        if (token.type !== "-" && token.type !== "+") {
           break;
         }
         this.advance();
         const binary = {
           left: exp,
-          operator: token.type === "plus" ? "+" : "-",
+          operator: token.type,
           right: this.binary(),
           type: "binary"
         };
@@ -121,13 +121,13 @@
       let exp = this.expression();
       while (this.current < this.tokens.length) {
         const token = this.getToken();
-        if (token.type !== "multiply" && token.type !== "divide") {
+        if (token.type !== "*" && token.type !== "/") {
           break;
         }
         this.advance();
         const binary = {
           left: exp,
-          operator: token.type === "multiply" ? "*" : "/",
+          operator: token.type,
           right: this.factor(),
           type: "binary"
         };
@@ -177,47 +177,25 @@
     scan() {
       while (!this.isEOF()) {
         this.start = this.current;
-        const c = this.getCurrentChar();
+        const c = this.getCurrentAndAdvance();
         switch (c) {
-          case "+": {
-            this.tokens.push({ type: "plus" });
-            this.advance();
-            break;
-          }
-          case "-": {
-            this.tokens.push({ type: "minus" });
-            this.advance();
-            break;
-          }
-          case "*": {
-            this.tokens.push({ type: "multiply" });
-            this.advance();
-            break;
-          }
-          case "/": {
-            this.tokens.push({ type: "divide" });
-            this.advance();
-            break;
-          }
-          case "=": {
-            this.tokens.push({ type: "equals" });
-            this.advance();
-            break;
-          }
+          case "+":
+          case "-":
+          case "*":
+          case "/":
+          case "=":
           case ";": {
-            this.tokens.push({ type: "semicolon" });
-            this.advance();
+            this.tokens.push({ type: c });
             break;
           }
           case " ": {
-            this.advance();
             break;
           }
           default: {
-            if (this.isNumeric()) {
+            if (this.isNumeric(c)) {
               this.tokens.push({ literal: Number(this.scanInt()), type: "int" });
               break;
-            } else if (this.isAlpha()) {
+            } else if (this.isAlpha(c)) {
               const alphaNumeric = this.scanAlphaNumeric();
               if (this.keywords.has(alphaNumeric)) {
                 this.tokens.push({ literal: alphaNumeric, type: "keyword" });
@@ -233,13 +211,13 @@
       return this.tokens;
     }
     scanAlphaNumeric() {
-      while (!this.isEOF() && (this.isAlpha() || this.isNumeric())) {
+      while (!this.isEOF() && (this.isAlpha(this.getCurrentChar()) || this.isNumeric(this.getCurrentChar()))) {
         this.advance();
       }
       return this.source.slice(this.start, this.current);
     }
     scanInt() {
-      while (!this.isEOF() && this.isNumeric()) {
+      while (!this.isEOF() && this.isNumeric(this.getCurrentChar())) {
         this.advance();
       }
       return this.source.slice(this.start, this.current);
@@ -250,14 +228,19 @@
     advance() {
       this.current++;
     }
-    isAlpha() {
-      return this.getCurrentChar().charCodeAt(0) - "a".charCodeAt(0) >= 0 && this.getCurrentChar().charCodeAt(0) - "z".charCodeAt(0) <= 25 || this.getCurrentChar().charCodeAt(0) - "A".charCodeAt(0) >= 0 && this.getCurrentChar().charCodeAt(0) - "Z".charCodeAt(0) <= 25;
+    isAlpha(c) {
+      return c.charCodeAt(0) - "a".charCodeAt(0) >= 0 && c.charCodeAt(0) - "z".charCodeAt(0) <= 25 || c.charCodeAt(0) - "A".charCodeAt(0) >= 0 && c.charCodeAt(0) - "Z".charCodeAt(0) <= 25;
     }
-    isNumeric() {
-      return this.getCurrentChar().charCodeAt(0) - "0".charCodeAt(0) >= 0 && this.getCurrentChar().charCodeAt(0) - "0".charCodeAt(0) <= 9;
+    isNumeric(c) {
+      return c.charCodeAt(0) - "0".charCodeAt(0) >= 0 && c.charCodeAt(0) - "0".charCodeAt(0) <= 9;
     }
     getCurrentChar() {
       return this.source[this.current];
+    }
+    getCurrentAndAdvance() {
+      const current = this.getCurrentChar();
+      this.advance();
+      return current;
     }
   };
 
@@ -265,6 +248,7 @@
   var code = "let hello = 5; print hello; print 5 + 10000 / 2;";
   var scanner = new Scanner(code);
   var tokens = scanner.scan();
+  console.log(tokens);
   var parser = new Parser(tokens);
   var astList = parser.parse();
   var evaluator = new Eval();
