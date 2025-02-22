@@ -22,7 +22,7 @@ export class Parser {
 
   varDeclaration() {
     const token = this.getToken();
-    if (token.literal === "let") {
+    if (token.type === "keyword" && token.literal === "let") {
       this.advance();
       const indentifier = this.expression();
 

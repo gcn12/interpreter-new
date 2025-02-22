@@ -61,7 +61,7 @@
     }
     varDeclaration() {
       const token = this.getToken();
-      if (token.literal === "let") {
+      if (token.type === "keyword" && token.literal === "let") {
         this.advance();
         const indentifier = this.expression();
         if (this.getToken().type !== "equals") {
@@ -180,32 +180,32 @@
         const c = this.getCurrentChar();
         switch (c) {
           case "+": {
-            this.tokens.push({ literal: "+", type: "plus" });
+            this.tokens.push({ type: "plus" });
             this.advance();
             break;
           }
           case "-": {
-            this.tokens.push({ literal: "-", type: "minus" });
+            this.tokens.push({ type: "minus" });
             this.advance();
             break;
           }
           case "*": {
-            this.tokens.push({ literal: "*", type: "multiply" });
+            this.tokens.push({ type: "multiply" });
             this.advance();
             break;
           }
           case "/": {
-            this.tokens.push({ literal: "/", type: "divide" });
+            this.tokens.push({ type: "divide" });
             this.advance();
             break;
           }
           case "=": {
-            this.tokens.push({ literal: "=", type: "equals" });
+            this.tokens.push({ type: "equals" });
             this.advance();
             break;
           }
           case ";": {
-            this.tokens.push({ literal: ";", type: "semicolon" });
+            this.tokens.push({ type: "semicolon" });
             this.advance();
             break;
           }
