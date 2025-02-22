@@ -71,15 +71,9 @@
       if (token.type === "keyword" && token.literal === "let") {
         this.advance();
         const indentifier = this.expression();
-        if (this.getToken().type !== "=") {
-          throw new Error("Expected =");
-        }
-        this.advance();
+        this.consume("=", "Expected =");
         const value = this.binary();
-        if (this.getToken().type !== ";") {
-          throw new Error("Expected ;");
-        }
-        this.advance();
+        this.consume(";", "Expected ;");
         const varDeclaration = {
           variable: indentifier,
           value,
@@ -96,12 +90,8 @@
           this.advance();
           const exp = this.binary();
           const print = { type: "print", value: exp };
-          if (this.getToken().type === ";") {
-            this.advance();
-            return print;
-          } else {
-            throw new Error("Expected: ;");
-          }
+          this.consume(";", "Expected: ;");
+          return print;
         }
       }
       return this.binary();
@@ -168,6 +158,12 @@
       }
       throw new Error("invalid expression");
     }
+    consume(type, errMessage) {
+      if (type !== this.getToken().type) {
+        throw new Error(errMessage);
+      }
+      this.advance();
+    }
     getToken() {
       return this.tokens[this.current];
     }
@@ -212,10 +208,6 @@
               type: "string",
               literal: this.scanString()
             });
-            if (this.getCurrentChar() !== '"') {
-              throw new Error('Expected: "');
-            }
-            this.advance();
             break;
           }
           default: {
@@ -238,10 +230,14 @@
       return this.tokens;
     }
     scanString() {
-      while (!this.isEOF() && (this.isAlpha(this.getCurrentChar()) || this.isNumeric(this.getCurrentChar()) || this.getCurrentChar() === " ")) {
+      while (!this.isEOF() && this.getCurrentChar() !== '"') {
         this.advance();
       }
-      return this.source.slice(this.start + 1, this.current);
+      if (this.isEOF()) {
+        throw new Error("Unterminated string");
+      }
+      this.advance();
+      return this.source.slice(this.start + 1, this.current - 1);
     }
     scanAlphaNumeric() {
       while (!this.isEOF() && (this.isAlpha(this.getCurrentChar()) || this.isNumeric(this.getCurrentChar()))) {
@@ -281,7 +277,6 @@
   var code = 'let woo = "hello" + " woo"; print woo;';
   var scanner = new Scanner(code);
   var tokens = scanner.scan();
-  console.log(tokens);
   var parser = new Parser(tokens);
   var astList = parser.parse();
   var evaluator = new Eval();

@@ -26,17 +26,11 @@ export class Parser {
       this.advance();
       const indentifier = this.expression();
 
-      if (this.getToken().type !== "=") {
-        throw new Error("Expected =");
-      }
+      this.consume("=", "Expected =");
 
-      this.advance();
       const value = this.binary();
 
-      if (this.getToken().type !== ";") {
-        throw new Error("Expected ;");
-      }
-      this.advance();
+      this.consume(";", "Expected ;");
 
       const varDeclaration: VarDeclaration = {
         variable: indentifier,
@@ -57,12 +51,8 @@ export class Parser {
         this.advance();
         const exp = this.binary();
         const print: Print = { type: "print", value: exp };
-        if (this.getToken().type === ";") {
-          this.advance();
-          return print;
-        } else {
-          throw new Error("Expected: ;");
-        }
+        this.consume(";", "Expected: ;");
+        return print;
       }
     }
 
@@ -141,6 +131,14 @@ export class Parser {
     }
 
     throw new Error("invalid expression");
+  }
+
+  consume(type: string, errMessage: string) {
+    if (type !== this.getToken().type) {
+      throw new Error(errMessage);
+    }
+
+    this.advance();
   }
 
   getToken() {

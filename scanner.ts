@@ -39,10 +39,6 @@ export class Scanner {
             type: "string",
             literal: this.scanString(),
           });
-          if (this.getCurrentChar() !== '"') {
-            throw new Error('Expected: "');
-          }
-          this.advance();
           break;
         }
 
@@ -70,16 +66,17 @@ export class Scanner {
   }
 
   scanString() {
-    while (
-      !this.isEOF() &&
-      (this.isAlpha(this.getCurrentChar()) ||
-        this.isNumeric(this.getCurrentChar()) ||
-        this.getCurrentChar() === " ")
-    ) {
+    while (!this.isEOF() && this.getCurrentChar() !== '"') {
       this.advance();
     }
 
-    return this.source.slice(this.start + 1, this.current);
+    if (this.isEOF()) {
+      throw new Error("Unterminated string");
+    }
+
+    this.advance();
+
+    return this.source.slice(this.start + 1, this.current - 1);
   }
 
   scanAlphaNumeric() {
